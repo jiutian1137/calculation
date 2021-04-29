@@ -16,7 +16,7 @@
 "License": "Please identify Mathematician"
 } }*/
 
-
+#include <iostream>
 #include <cmath>// abs, sqrt, pow, nextafter
 #include <numeric>// std::numeric_limits<T>::epsilon, std::numeric_limits<T>::max
 namespace calculation {
@@ -27,7 +27,7 @@ namespace calculation {
   Real f2_difference(Function f, Real x, Real* error = nullptr) {
     Real eps = std::numeric_limits<Real>::epsilon();
     Real h = static_cast<Real>(sqrt(4 * eps));
-	if ( (x + h) - x == 0 ) {
+    if ( (x + h) - x == 0 ) {
       // similar nextafter(x)-x
       h = x * eps;
     }
@@ -83,19 +83,19 @@ namespace calculation {
                    = ----------------- +- --------------------------
                             2*h                      2*h
 
-  * error formula
-  Error = abs(ErrorResult - NoErrorResult)
-
   * mathematical error
+  Error = abs(ErrorResult - NoErrorResult)
                f(x+h) - f(x-h)     f(x+h) - f(x-h)     fxxx(x)
-  Error = abs(----------------- - ----------------- + --------*pow(h,2) + ...) 
+        = abs(----------------- - ----------------- + --------*pow(h,2) + ...) 
                      2*h                 2*h           fact(3)
                 fxxx(x)
         = abs( --------*pow(h,2) + ... )
+                fact(3)
 
   * computation error
+  Error = abs(ErrorResult - NoErrorResult)
                 f(x+h) - f(x-h)     f(x+h) - f(x-h)      f(x+h)*eps +- f(x-h)*eps
-  Error = abs( ----------------- - ----------------- +- -------------------------- )
+        = abs( ----------------- - ----------------- +- -------------------------- )
                       2*h                 2*h                       2*h
             abs(f(x+h))*eps + abs(f(x-h))*eps
         <= -----------------------------------
@@ -104,19 +104,19 @@ namespace calculation {
         <= ----------------------------------------------
                               2*h
             abs(f(x)) * (eps + eps)
-        <= ------------------------- ,apply 'intermediate theorem'
+        ~<= -------------------------  ,apply 'intermediate theorem'
                      2*h
-        <= abs(f(x)) * eps / h
+        ~<= abs(f(x)) * eps / h
 
   * 'h'
-                          fxxx(x)
-  (1) TotalError <= abs( --------*pow(h,2) + ... ) + abs(f(x))*eps/h
-                          fact(3)
                            fxxx(x)
-                 ~<= abs( --------*pow(h,2) ) + abs(f(x))*eps/h  ,ignore low order terms
+  (1) TotalError ~<= abs( --------*pow(h,2) + ... ) + abs(f(x))*eps/h
+                           fact(3)
+                           fxxx(x)
+                 ~<= abs( --------*pow(h,2) ) + abs(f(x))*eps/h   ,ignore low order terms
                            fact(3)
                            pow(h,2)
-                 ~<= abs( --------- ) + abs(f(x))*eps/h ,remove relatin between fxxx(x) and Error
+                 ~<= abs( --------- ) + abs(f(x))*eps/h   ,remove relatin between fxxx(x) and Error
                            fact(3)
                  ~<= pow(h,2)/6 + abs(f(x))*eps/h
   (2)
@@ -127,7 +127,7 @@ namespace calculation {
            +--------------------- h
   (2)            d/dh * TotalError == 0   ,find critial point
       h/3 - abs(f(x))*eps/pow(h,2) == 0
-	                           h/3 == abs(f(x))*eps/pow(h,2)  ,+ abs(f(x))*eps/pow(h,2)
+                               h/3 == abs(f(x))*eps/pow(h,2)  ,+ abs(f(x))*eps/pow(h,2)
                         pow(h,3)/3 == abs(f(x))*eps           ,* pow(h,2)
                           pow(h,3) == abs(f(x))*eps*3
                                  h == pow(abs(f(x))*eps*3, 1/3) ,pow 1/3
@@ -140,7 +140,7 @@ namespace calculation {
   Real c3_difference(Function f, Real x, Real* error = nullptr) {
     Real eps = std::numeric_limits<Real>::epsilon();
     Real h = pow(abs(f(x))*eps*3, Real(1)/3);
-	if ( (x + h) - x == 0 ) {
+    if ( (x + h) - x == 0 ) {
       // similar nextafter(x)-x
       h = x * eps;
     }
@@ -164,23 +164,23 @@ namespace calculation {
   Real c5_difference(Function f, Real x, Real* error = nullptr) {
     Real eps = std::numeric_limits<Real>::epsilon();
     Real h = pow(abs(f(x))*eps*Real(11.25), Real(1)/5);
-	if ( (x + h) - x == 0 ) {
+    if ( (x + h) - x == 0 ) {
       // similar nextafter(x)-x
       h = x * eps;
     }
 
     Real y_h = f(x + h);
     Real y_m_h = f(x - h);
-	Real y_two_h = f(x + 2 * h);
-	Real y_m_two_h = f(x - 2 * h);
-	if (error) {
+    Real y_two_h = f(x + 2 * h);
+    Real y_m_two_h = f(x - 2 * h);
+    if (error) {
       // math_error: pow(h,4)/30 * dddddf(x), dddddfx=seven_point_centered_difference_fifth_derivative
       Real y_three_h = f(x + 3 * h);
       Real y_m_three_h = f(x - 3 * h);
       *error = abs((y_three_h - y_m_three_h) + 5 * (y_h - y_m_h) - 4 * (y_two_h - y_m_two_h)) / (60 * h);
       // round_error
       *error += (8 * (abs(y_h) + abs(y_m_h)) + (abs(y_two_h) + abs(y_m_two_h))) * eps / (12 * h);
-	}
+    }
     return (8 * (y_h - y_m_h) - (y_two_h - y_m_two_h)) / (12 * h);
   }
 
@@ -190,224 +190,88 @@ namespace calculation {
   Real c7_difference(Function f, Real x, Real* error = nullptr) {
     Real eps = std::numeric_limits<Real>::epsilon();
     Real h = pow(abs(f(x))*eps*385/9, Real(1.0)/7);
-	if ( (x + h) - x == 0 ) {
-      // similar nextafter(x)-x
-      h = x * eps;
-    }
-
-    Real y_h = f(x + h);
-	Real y_m_h = f(x - h);
-	Real y_two_h = f(x + 2 * h);
-	Real y_m_two_h = f(x - 2 * h);
-	Real y_three_h = f(x + 3 * h);
-	Real y_m_three_h = f(x - 3 * h);
-	if (error) {
-      // math_error: pow(h,6)/140 * d7fx, nine_point_centered_difference_seventh_derivative
-      Real y_four_h = f(x + 4 * h);
-	  Real y_m_four_h = f(x - 4 * h);
-	  *error = abs((y_four_h - y_m_four_h) - 14 * (y_h - y_m_h) + 14 * (y_two_h - y_m_two_h) - 6 * (y_three_h - y_m_three_h)) / (280 * h);
-	  // round_error: ...
-	  *error += (abs(y_three_h) + abs(y_m_three_h) + 9 * (abs(y_two_h) + abs(y_m_two_h)) + 45 * (abs(y_h) + abs(y_m_h))) * eps / (60 * h);
-	}
-	return ((y_three_h - y_m_three_h) - 9 * (y_two_h - y_m_two_h) + 45 * (y_h - y_m_h)) / (60 * h);
-  }
-
-  /* nine point centered difference
-    Notation:{
-			f(x) = f(x),
-			fx(x) = dfdx(x),
-			fxx(x) = ddfdxx(x) = fx2(x),
-			fxxx(x) = dddfdxxx(x) = fx3(x),
-			fxxxx(x) = ddddfdxxxx(x) = fx4(x),
-			fx...x(x) = d..dfdx..x(x) = fxN(x)
-		},
-		Taylor-theorem:{
-			f(x+h) = pow(h,0) * (1/fact(0)) * f(x)
-				   + pow(h,1) * (1/fact(1)) * fx(x)
-				   + pow(h,2) * (1/fact(2)) * fxx(x)
-				   + ... 
-				   + pow(h,N-1) * (1/fact(N-1)) * df(N-1x)(x)
-				   + integrate[ pow(x+h-u,N-1) * (1/fact(N-1)) * dN-1f(u) * du ]
-		},
-		Step1:{ "Use Taylor theorem, and ignore unwanted terms",
-			f(x+h) =  pow(h,0) * (1/1) * f(x)
-					+ pow(h,1) * (1/1) * fx(x)
-					+ pow(h,2) * (1/2) * fxx(x)
-					+ pow(h,3) * (1/6) * fxxx(x)
-					+ pow(h,4) * (1/24) * fxxxx(x)
-					+ pow(h,5) * (1/120) * fxxxxx(x)
-					+ pow(h,6) * (1/720) * fxxxxxx(x)
-					+ pow(h,7) * (1/5'040) * fxxxxxxx(x)
-					+ pow(h,8) * (1/40'320) * fxxxxxxxx(x)
-					+ pow(h,9) * (1/362'880) * fxxxxxxxxx(x)
-					+ pow(h,10) * (1/3'628'800) * fxxxxxxxxxx(x)
-					+ pow(h,11) * (1/39'916'800) * fxxxxxxxxxxx(x)
-					+ ...ignore;
-			f(x-h) = ...;
-
-			f(x+2*h) =  pow(2*h,0) * (1/1) * f(x)
-					  + pow(h,1) * (2/1) * fx(x)
-					  + pow(h,2) * (4/2) * fxx(x)
-					  + pow(h,3) * (8/6) * fxxx(x)
-					  + pow(h,4) * (16/24) * fxxxx(x)
-					  + pow(h,5) * (32/120) * fxxxxx(x)
-					  + pow(h,6) * (64/720) * fxxxxxx(x) 
-					  + pow(h,7) * (128/5'040) * fxxxxxxx(x)
-					  + pow(h,8) * (256/40'320) * fxxxxxxxx(x)
-					  + pow(h,9) * (512/362'880) * fxxxxxxxxx(x)
-					  + pow(h,10) * (1'024/3'628'800) * fxxxxxxxxxx(x)
-					  + pow(h,11) * (2'048/39'916'800) * fxxxxxxxxxxx(x)
-					  + ...ignore;
-			f(x-2*h)) = ...;
-
-			f(x+3*h) =  pow(3*h,0) * (1/1) * f(x)
-					  + pow(h,1) * (3/1) * fx(x)
-					  + pow(h,2) * (9/2) * fxx(x)
-					  + pow(h,3) * (27/6) * fxxx(x)
-					  + pow(h,4) * (81/24) * fxxxx(x)
-					  + pow(h,5) * (243/120) * fxxxxx(x)
-					  + pow(h,6) * (729/720) * fxxxxxx(x)
-					  + pow(h,7) * (2'187/5'040) * fxxxxxxx(x)
-					  + pow(h,8) * (8'748/40'320) * fxxxxxxxx(x)
-					  + pow(h,9) * (19'683/362'880) * fxxxxxxxxx(x)
-					  + pow(h,10) * (59'049/3'628'800) * fxxxxxxxxxx(x)
-					  + pow(h,11) * (177'147/39'916'800) * fxxxxxxxxxxx(x)
-					  + ...ignore;
-			f(x-3*h) = ...;
-
-			f(x+4*h) =  pow(4*h,0) * (1/1) * f(x)
-					  + pow(h,1) * (4/1) * fx(x)
-					  + pow(h,2) * (16/2) * fxx(x)
-					  + pow(h,3) * (64/6) * fxxx(x)
-					  + pow(h,4) * (256/24) * fxxxx(x)
-					  + pow(h,5) * (1'024/120) * fxxxxx(x)
-					  + pow(h,6) * (4'096/720) * fxxxxxx(x)
-					  + pow(h,7) * (16'384/5'040) * fxxxxxxx(x)
-					  + pow(h,8) * (65'536/40'320) * fxxxxxxxx(x)
-					  + pow(h,9) * (262'144/362'880) * fxxxxxxxxx(x)
-					  + pow(h,10) * (1'048'576/3'628'800) * fxxxxxxxxxx(x)
-					  + pow(h,11) * (4'194'304/39'916'800) * fxxxxxxxxxxx(x)
-					  + ...ignore;
-			f(x-4*h) = ...;
-		},
-		Step2:{ "Get dfdx(x) = ?, use elimination and sorting",
-			f(x+h)-f(x-h) =  
-				  pow(h,1) * (2/1) * fx(x)
-				+ pow(h,3) * (1/3) * fx3(x)
-				+ pow(h,5) * (1/60) * fx5(x)
-				+ pow(h,7) * (1/2'520) * fx7(x)
-				+ pow(h,9) * (1/181'440) * fx9(x)
-				+ pow(h,11) * (1/19'958'400) * fx11(x)
-				+ ...ignore;
-
-			f(x+2*h)-f(x-2*h) = 
-				  pow(h,1) * (4/1) * fx(x)
-				+ pow(h,3) * (8/3) * fx3(x)
-				+ pow(h,5) * (32/60) * fx5(x)
-				+ pow(h,7) * (128/2'520) * fx7(x)
-				+ pow(h,9) * (512/181'440) * fx9(x)
-				+ pow(h,11) * (2'048/19'958'400) * fx11(x)
-				+ ...ignore;
-
-			f(x+3*h)-f(x-3*h) = 
-				  pow(h,1) * (6/1) * fx(x)
-				+ pow(h,3) * (27/3) * fx3(x)
-				+ pow(h,5) * (243/60) * fx5(x)
-				+ pow(h,7) * (2'187/2'520) * fx7(x)
-				+ pow(h,9) * (19'683/181'440) * fx9(x)
-				+ pow(h,11) * (177'147/19'958'400) * fx11(x)
-				+ ...ignore;
-
-			f(x+4*h)-f(x-4*h) = 
-				  pow(h,1) * (8/1) * fx(x)
-				+ pow(h,3) * (64/3) * fx3(x)
-				+ pow(h,5) * (1'024/60) * fx5(x)
-				+ pow(h,7) * (16'384/2'520) * fx7(x)
-				+ pow(h,9) * (262'144/181'440) * fx9(x)
-				+ pow(h,11) * (4'194'304/19'958'400) * fx11(x)
-				+ ...ignore;
-
-			672 * [ f(x+h) - f(x-h) ] =
-				  pow(h,1) * (672*2) * fx(x)
-				+ pow(h,3) * (672/3) * fx3(x)
-				+ pow(h,5) * (672/60) * fx5(x)
-				+ pow(h,7) * (672/2'520) * fx7(x)
-				+ pow(h,9) * (672/181'440) * fx9(x)
-				+ pow(h,11) * (672/19'958'400) * fx11(x)
-				+ ...ignore;
-
-			168 * [ f(x+2*h) - f(x-2*h) ] =
-					pow(h,1) * (168*4) * fx(x)
-				+ pow(h,3) * (168*8 / 3) * fx3(x)
-				+ pow(h,5) * (168*32 / 60) * fx5(x)
-				+ pow(h,7) * (168*128 / 2'520) * fx7(x)
-				+ pow(h,9) * (168*512 / 181'440) * fx9(x)
-				+ pow(h,11) * (168*2'048 / 19'958'400) * fx11(x)
-				+ ...ignore;
-
-			32 * [ f(x+3*h) - f(x-3*h) ] =
-					pow(h,1) * (32*6) * fx(x)
-				+ pow(h,3) * (32*27 / 3) * fx3(x)
-				+ pow(h,5) * (32*243 / 60) * fx5(x)
-				+ pow(h,7) * (32*2'187 / 2'520) * fx7(x)
-				+ pow(h,9) * (32*19'683 / 181'440) * fx9(x)
-				+ pow(h,11) * (32*177'147 / 19'958'400) * fx11(x)
-				+ ...ignore;
-
-			3 * [ f(x+4*h) - f(x-4*h) ] =
-					pow(h,1) * (3*8) * fx(x)
-				+ pow(h,3) * (3*64 / 3) * fx3(x)
-				+ pow(h,5) * (3*1'024 / 60) * fx5(x)
-				+ pow(h,7) * (3*16'384 / 2'520) * fx7(x)
-				+ pow(h,9) * (3*262'144 / 181'440) * fx9(x)
-				+ pow(h,11) * (3*4'194'304 / 19'958'400) * fx11(x)
-				+ ...ignore;
-
-			672*[f(x+h)-f(x-h)] - 168*[f(x+2*h)-f(x-2*h)] + 32*[f(x+3*h)-f(x-3*h)] - 3*[f(x+4*h)-f(x-4*h)]
-				=    pow(h,1) * (672*2 - 168*4 + 32*6 - 3*8) * fx(x)
-				+ pow(h,3) * (672/3 - 168*8/3 + 32*27/3 - 3*64/3) * fx3(x)
-				+ pow(h,5) * (672/60 - 168*32/60 + 32*243/60 - 3*1'024/60) * fx5(x)
-				+ pow(h,7) * (672/2'520 - 168*128/2'520 + 32*2'187/2'520 - 3*16'384/2'520) * fx7(x)
-				+ pow(h,9) * (672/181'440 - 168*512/181'440 + 32*19'683/181'440 - 3*262'144/181'440) * fx9(x)
-				+ pow(h,11) * (672/19'958'400 - 168*2'048/19'958'400 + 32*177'147/19'958'400 - 3*4'194'304/19'958'400) * fx11(x)
-				+ ...ignore
-				=    pow(h,1) * 840 * fx(x)
-				+ pow(h,3) * 0 * fx3(x)
-				+ pow(h,5) * 0 * fx5(x)
-				+ pow(h,7) * 0 * fx7(x)
-				+ pow(h,9) * (-4/3) * fx9(x)
-				+ ...ignore
-				= 840*h*fx(x) - (4/3)*pow(h,9)*fx9(x) + ...ignore;
-
-			fx(x) * 840*h = { 672*[f(x+h)-f(x-h)] - 168*[f(x+2*h)-f(x-2*h)] + 32*[f(x+3*h)-f(x-3*h)] - 3*[f(x+4*h)-f(x-4*h)] }
-							+ (4/3) * pow(h,9) * fx9(x)
-							+ ...ignore
-			fx(x)		  = { 672*[f(x+h)-f(x-h)] - 168*[f(x+2*h)-f(x-2*h)] + 32*[f(x+3*h)-f(x-3*h)] - 3*[f(x+4*h)-f(x-4*h)] } / (840*h)
-				            + (4/3) * pow(h,9) * fx9(x) / (840*h) 
-							+ ...igonore / (840*h) 
-			
-			dfdx(x)		  = { 672*[f(x+h)-f(x-h)] - 168*[f(x+2*h)-f(x-2*h)] + 32*[f(x+3*h)-f(x-3*h)] - 3*[f(x+4*h)-f(x-4*h)] } / (840*h)
-							+ (1/630) * pow(h,8) * fx9(x)
-							+ ...igonore
-		}
-	} */
-  template<typename Function, typename Real>
-  Real c9_difference(Function f, Real x, Real* error = nullptr) {
-    Real eps = std::numeric_limits<Real>::epsilon();
-    Real h = pow(abs(f(x))*eps*2625/16, Real(1)/9);
-	if ( (x + h) - x == 0 ) {
+    if ( (x + h) - x == 0 ) {
       // similar nextafter(x)-x
       h = x * eps;
     }
 
     Real y_h = f(x + h);
     Real y_m_h = f(x - h);
-	Real y_two_h = f(x + 2 * h);
-	Real y_m_two_h = f(x - 2 * h);
-	Real y_three_h = f(x + 3 * h);
-	Real y_m_three_h = f(x - 3 * h);
-	Real y_four_h = f(x + 4 * h);
-	Real y_m_four_h = f(x - 4 * h);
+    Real y_two_h = f(x + 2 * h);
+    Real y_m_two_h = f(x - 2 * h);
+    Real y_three_h = f(x + 3 * h);
+    Real y_m_three_h = f(x - 3 * h);
+    if (error) {
+      // math_error: pow(h,6)/140 * d7fx, nine_point_centered_difference_seventh_derivative
+      Real y_four_h = f(x + 4 * h);
+      Real y_m_four_h = f(x - 4 * h);
+      *error = abs((y_four_h - y_m_four_h) - 14 * (y_h - y_m_h) + 14 * (y_two_h - y_m_two_h) - 6 * (y_three_h - y_m_three_h)) / (280 * h);
+      // round_error: ...
+      *error += (abs(y_three_h) + abs(y_m_three_h) + 9 * (abs(y_two_h) + abs(y_m_two_h)) + 45 * (abs(y_h) + abs(y_m_h))) * eps / (60 * h);
+    }
+    return ((y_three_h - y_m_three_h) - 9 * (y_two_h - y_m_two_h) + 45 * (y_h - y_m_h)) / (60 * h);
+  }
+
+  /* nine point centered difference
+  * formula
+                                fxx(x)            fxxx(x)            fxxxx(x)            fxxxxx(x)            fxxxxxx(x)            fxxxxxxx(x)            fxxxxxxxx(x)            fxxxxxxxxx(x)
+  (1) f(x+h) = f(x) + fx(x)*h + ------*pow(h,2) + -------*pow(h,3) + --------*pow(h,4) + ---------*pow(h,5) + ----------*pow(h,6) + -----------*pow(h,7) + ------------*pow(h,8) + -------------*pow(h,9) + ...
+                                  2                  6                  24                 120                   720                   5'040                  40'320                  362'880
+  (1) f(x-h) = ...
+                                    fxx(x)*4          fxxx(x)*8          fxxxx(x)*16         fxxxxx(x)*32         fxxxxxx(x)*64         fxxxxxxx(x)*128        fxxxxxxxx(x)*256        fxxxxxxxxx(x)*512
+  (1) f(x+2*h) = f(x) + fx(x)*2*h + ------*pow(h,2) + -------*pow(h,3) + --------*pow(h,4) + ---------*pow(h,5) + ----------*pow(h,6) + -----------*pow(h,7) + ------------*pow(h,8) + -------------*pow(h,9) + ...
+                                      2                  6                  24                 120                    720                  5'040                  40'320                  362'880
+  (1) f(x-2*h)) = ...
+                                    fxx(x)*9          fxxx(x)*27         fxxxx(x)*81         fxxxxx(x)*243        fxxxxxx(x)*729        fxxxxxxx(x)*2'187      fxxxxxxxx(x)*8'748      fxxxxxxxxx(x)*19'683
+  (1) f(x+3*h) = f(x) + fx(x)*3*h + ------*pow(h,2) + -------*pow(h,3) + --------*pow(h,4) + ---------*pow(h,5) + ----------*pow(h,6) + -----------*pow(h,7) + ------------*pow(h,8) + -------------*pow(h,9) + ...
+                                      2                  6                  24                 120                    720                  5'040                  40'320                  362'880		 
+  (1) f(x-3*h) = ...
+                                    fxx(x)*16         fxxx(x)*64         fxxxx(x)*256        fxxxxx(x)*1'024      fxxxxxx(x)*4'096      fxxxxxxx(x)*16'384     fxxxxxxxx(x)*65'536     fxxxxxxxxx(x)*262'144
+  (1) f(x+4*h) = f(x) + fx(x)*4*h + ------*pow(h,2) + -------*pow(h,3) + --------*pow(h,4) + ---------*pow(h,5) + ----------*pow(h,6) + -----------*pow(h,7) + ------------*pow(h,8) + -------------*pow(h,9) + ...
+                                      2                  6                  24                 120                    720                  5'040                  40'320                  362'880
+  (1) f(x-4*h) = ...
+  
+  (2) 672*(f(x+h)-f(x-h)) - 168*(f(x+2*h)-f(x-2*h)) + 32*(f(x+3*h)-f(x-3*h)) - 3*(f(x+4*h)-f(x-4*h))
+                                fxxx(x)                  fxxxxx(x)                  fxxxxxxx(x)                  fxxxxxxxxx(x)
+     =  ( 1'344*fx(x)*h + 1'344*-------*pow(h,3) + 1'344*---------*pow(h,5) + 1'344*-----------*pow(h,7) + 1'344*-------------*pow(h,9) + ... )
+                                   6                        120                        5'040                        362'880
+                              fxxx(x)*8              fxxxxx(x)*32             fxxxxxxx(x)*128            fxxxxxxxxx(x)*512
+      - ( 336*fx(x)*2*h + 336*-------*pow(h,3) + 336*---------*pow(h,5) + 336*-----------*pow(h,7) + 336*-------------*pow(h,9) + ... )
+                                 6                      120                      5'040                      362'880
+                            fxxx(x)*27            fxxxxx(x)*243           fxxxxxxx(x)*2'187         fxxxxxxxxx(x)*19'683
+      + ( 64*fx(x)*3*h + 64*-------*pow(h,3) + 64*---------*pow(h,5) + 64*-----------*pow(h,7) + 64*-------------*pow(h,9) + ... )
+                               6                     120                     5'040                     362'880
+                          fxxx(x)*64           fxxxxx(x)*1'024        fxxxxxxx(x)*16'384       fxxxxxxxxx(x)*262'144
+      - ( 6*fx(x)*4*h + 6*-------*pow(h,3) + 6*---------*pow(h,5) + 6*-----------*pow(h,7) + 6*-------------*pow(h,9) + ... )
+                             6                    120                    5'040                    362'880
+                                              (1'344 - 336*8 + 64*27 - 6*64)                    (1'344 - 336*32 + 64*243 - 6*1'024)                      (1'344 - 336*128 + 64*2'187 - 6*16'384)                        (1'344 - 336*512 + 64*19'683 - 6*262'144)
+     = (1'344 - 336*2 + 64*3 - 6*4)*fx(x)*h + ------------------------------*fxxx(x)*pow(h,3) + -----------------------------------*fxxxxx(x)*pow(h,5) + ---------------------------------------*fxxxxxxx(x)*pow(h,7) + -----------------------------------------*fxxxxxxxxx(x)*pow(h,9) + ...
+                                                           6                                                    120                                                      5'040                                                         362'880
+     = 840*fx(x)*h + 0 + 0 + 0 + (-4/3)*fxxxxxxxxx(x)*pow(h,9) + ...
+           672*(f(x+h)-f(x-h)) - 168*(f(x+2*h)-f(x-2*h)) + 32*(f(x+3*h)-f(x-3*h)) - 3*(f(x+4*h)-f(x-4*h) + 4/3*fxxxxxxxxx(x)*pow(h,9) + ...
+  fx(x) = ----------------------------------------------------------------------------------------------------------------------------------
+                                                                    840*h
+           672*(f(x+h)-f(x-h)) - 168*(f(x+2*h)-f(x-2*h)) + 32*(f(x+3*h)-f(x-3*h)) - 3*(f(x+4*h)-f(x-4*h)      1
+        = ----------------------------------------------------------------------------------------------- + -----*fxxxxxxxxx(x)*pow(h,8) + ...
+                                                    840*h                                                    630
+  */
+  template<typename Function, typename Real>
+  Real c9_difference(Function f, Real x, Real* error = nullptr) {
+    Real eps = std::numeric_limits<Real>::epsilon();
+    Real h = pow(abs(f(x))*eps*2625/16, Real(1)/9);
+    if ( (x + h) - x == 0 ) {
+      // similar nextafter(x)-x
+      h = x * eps;
+    }
+
+    Real y_h = f(x + h);
+    Real y_m_h = f(x - h);
+    Real y_two_h = f(x + 2 * h);
+    Real y_m_two_h = f(x - 2 * h);
+    Real y_three_h = f(x + 3 * h);
+    Real y_m_three_h = f(x - 3 * h);
+    Real y_four_h = f(x + 4 * h);
+    Real y_m_four_h = f(x - 4 * h);
     if (error) {
       // round_error: ...
       *error = (
@@ -530,12 +394,12 @@ namespace calculation {
     }
 
     Real y_h = f(x + h);
-	Real y_m_h = f(x - h);
-	Real y_two_h = f(x + 2 * h);
-	Real y_m_two_h = f(x - 2 * h);
-	if (error) {
+    Real y_m_h = f(x - h);
+    Real y_two_h = f(x + 2 * h);
+    Real y_m_two_h = f(x - 2 * h);
+    if (error) {
       // math_error: pow(h,2)*(1/6)*d6f(x)
-	}
-	return ((y_two_h + y_m_two_h) - 4 * (y_h + y_m_h) + 6 * y) / pow(h, 4);
+    }
+    return ((y_two_h + y_m_two_h) - 4 * (y_h + y_m_h) + 6 * y) / pow(h, 4);
   }
 }

@@ -238,6 +238,11 @@ namespace calculation {
   
   * integral( pow(x + A, N), dx ) = pow(x + A, N + 1)/(N + 1)
 
+  * Taylor theorem
+            f(x)              fx(x)             fxx(x)                   fx...x(x)                         dN-1f(u)
+  f(x+h) = ------*pow(h,0) + -------*pow(h,1) + -------*pow(h,2) + ... + ---------*pow(h,N-1) + integral( ----------*pow(x+h-u,N-1), du )
+           fact(0)           fact(1)            fact(2)                  fact(N-1)                         fact(N-1)
+
   */
   template<typename Real, typename Function>
   auto integral(Real a, Real b, Function f, size_t n = 16) {
