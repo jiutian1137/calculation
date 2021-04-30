@@ -16,7 +16,7 @@
 "License": "Please identify Mathematician"
 } }*/
 
-#include <iostream>
+
 #include <cmath>// abs, sqrt, pow, nextafter
 #include <numeric>// std::numeric_limits<T>::epsilon, std::numeric_limits<T>::max
 namespace calculation {
@@ -26,10 +26,10 @@ namespace calculation {
   template<typename Function, typename Real>
   Real f2_difference(Function f, Real x, Real* error = nullptr) {
     Real eps = std::numeric_limits<Real>::epsilon();
-    Real h = static_cast<Real>(sqrt(4 * eps));
+    Real y = f(x);
+    Real h = sqrt((y==0 ? eps : abs(y)*eps) * 4);
     if ( (x + h) - x == 0 ) {
-      // similar nextafter(x)-x
-      h = x * eps;
+      h = nextafter(x, std::numeric_limits<Real>::max()) - x; 
     }
 
     Real y0 = f(x);
@@ -139,10 +139,10 @@ namespace calculation {
   template<typename Function, typename Real>
   Real c3_difference(Function f, Real x, Real* error = nullptr) {
     Real eps = std::numeric_limits<Real>::epsilon();
-    Real h = pow(abs(f(x))*eps*3, Real(1)/3);
+    Real y = f(x);
+    Real h = pow((y==0 ? eps : abs(y)*eps)*3, Real(1)/3);
     if ( (x + h) - x == 0 ) {
-      // similar nextafter(x)-x
-      h = x * eps;
+      h = nextafter(x, std::numeric_limits<Real>::max()) - x; 
     }
 
     Real y_h = f(x + h);
@@ -163,10 +163,10 @@ namespace calculation {
   template<typename Function, typename Real>
   Real c5_difference(Function f, Real x, Real* error = nullptr) {
     Real eps = std::numeric_limits<Real>::epsilon();
-    Real h = pow(abs(f(x))*eps*Real(11.25), Real(1)/5);
+    Real y = f(x);
+    Real h = pow((y == 0 ? eps : abs(y)*eps)*Real(11.25), Real(1)/5);
     if ( (x + h) - x == 0 ) {
-      // similar nextafter(x)-x
-      h = x * eps;
+      h = nextafter(x, std::numeric_limits<Real>::max()) - x; 
     }
 
     Real y_h = f(x + h);
@@ -189,10 +189,10 @@ namespace calculation {
   template<typename Function, typename Real>
   Real c7_difference(Function f, Real x, Real* error = nullptr) {
     Real eps = std::numeric_limits<Real>::epsilon();
-    Real h = pow(abs(f(x))*eps*385/9, Real(1.0)/7);
+    Real y = f(x);
+    Real h = pow((y == 0 ? eps : abs(y)*eps)*385/9, Real(1.0)/7);
     if ( (x + h) - x == 0 ) {
-      // similar nextafter(x)-x
-      h = x * eps;
+      h = nextafter(x, std::numeric_limits<Real>::max()) - x; 
     }
 
     Real y_h = f(x + h);
@@ -258,10 +258,10 @@ namespace calculation {
   template<typename Function, typename Real>
   Real c9_difference(Function f, Real x, Real* error = nullptr) {
     Real eps = std::numeric_limits<Real>::epsilon();
-    Real h = pow(abs(f(x))*eps*2625/16, Real(1)/9);
+    Real y = f(x);
+    Real h = pow((y == 0 ? eps : abs(y)*eps)*2625/16, Real(1)/9);
     if ( (x + h) - x == 0 ) {
-      // similar nextafter(x)-x
-      h = x * eps;
+      h = nextafter(x, std::numeric_limits<Real>::max()) - x; 
     }
 
     Real y_h = f(x + h);
@@ -358,13 +358,11 @@ namespace calculation {
   */
   template<typename Function, typename Real>
   Real c3_difference2nd(Function f, Real x, Real* error = nullptr) {
-    Real y = f(x);
-
     Real eps = std::numeric_limits<Real>::epsilon();
-    Real h = static_cast<Real>(pow(48 * abs(y) * eps, 1.0 / 4.0));
+    Real y = f(x);
+    Real h = pow((y == 0 ? eps : abs(y)*eps) * 48, Real(1)/4);
     if ( (x + h) - x == 0 ) {
-      // similar nextafter(x)-x
-      h = x * eps;
+      h = nextafter(x, std::numeric_limits<Real>::max()) - x; 
     }
 
     Real y_h = f(x + h);
@@ -378,19 +376,18 @@ namespace calculation {
   /* five point centered difference, fourth order derivative
   */
   template<typename Function, typename Real>
-  Real differentiate4th(Function f, Real x, Real* error = nullptr) {
-    Real y = f(x);
+  Real c5_difference4th(Function f, Real x, Real* error = nullptr) {
+    Real eps = std::numeric_limits<Real>::epsilon();
 
     // E = pow(h,2)*(1/6)*d6f(x) + 16*e/pow(h,4)
     // dE = h*(2/6)*d6f(x) - 4*16*e*pow(h,-5) = 0
     // h*(2/6)*d6f(x) = 4*16*e*pow(h,-5)
     // pow(h,6) = 64*(6/2)*e/d6f(x)
     // h approxi pow(192*e, 1.0/6.0)
-    Real eps = std::numeric_limits<Real>::epsilon();
-    Real h = static_cast<Real>(pow(192 * abs(y) * eps, 1.0 / 6.0));
+    Real y = f(x);
+    Real h = pow((y == 0 ? eps : abs(y)*eps) * 192, Real(1)/6);
     if ( (x + h) - x == 0 ) {
-      // similar nextafter(x)-x
-      h = x * eps;
+      h = nextafter(x, std::numeric_limits<Real>::max()) - x; 
     }
 
     Real y_h = f(x + h);
@@ -403,3 +400,35 @@ namespace calculation {
     return ((y_two_h + y_m_two_h) - 4 * (y_h + y_m_h) + 6 * y) / pow(h, 4);
   }
 }
+
+
+/* // Test
+//double x = 0.77777;
+//auto f = [](double x) { return cos(x); };
+//auto df = [](double x) { return -sin(x); };
+
+//double x = 10.500;
+//auto f = [](double x){ return pow(x,6) - 1'340'095.640625; };
+//auto df = [](double x){ return 6*pow(x,5); };
+
+double x = 10.51231;
+auto f = [](double x){ return pow(x,3) - 110.25; };
+auto df = [](double x){ return 3*x*x; };
+
+std::cout << "res:" << df(x) << std::endl;
+
+auto c3_diff = [&](double x, double h) { return (f(x+h) - f(x-h)) / h/2; };
+for(double h = 1000.0; h >= std::numeric_limits<double>::epsilon(); h *= 0.5){
+	std::cout << "h:" <<std::setw(20)<< h 
+              << "\tres:" <<std::setw(20)<<c3_diff(x,h) 
+              << "\terror:" << abs(c3_diff(x,h) - df(x)) << std::endl;
+}
+//abs(f(x))*eps / pow(h, 2) = -h
+//abs(f(x))*eps = -pow(h, 3)
+// -cbrt(abs(f(x))*eps) = h
+double eps = std::numeric_limits<double>::epsilon();
+std::cout << "idea_error:" << abs(c3_diff(x, -cbrt(abs(f(x)*eps))) - df(x)) << std::endl;
+std::cout << "h:" <<std::setw(20)<<pow((f(x)==0 ? eps : abs(f(x))*eps)*3, 1.0/3)
+          << "\tres:" <<std::setw(20)<<c3_difference(f,x) 
+          << "\terror:" << abs(c3_difference(f,x) - df(x)) << std::endl;
+*/
